@@ -65,7 +65,7 @@ func newFfmpegWorker() *FfmpegWorker {
 		return nil
 	}
 
-	path, err := exec.LookPath("ffmpeg")
+	path, err := exec.LookPath("/usr/lib/jellyfin-ffmpeg/ffmpeg")
 	if err != nil {
 		log.Println("Executable worker not found: ffmpeg")
 	} else {
@@ -121,11 +121,11 @@ func (worker *DarktableWorker) EncodeJpeg(inputPath string, outputPath string, j
 
 func (worker *FfmpegWorker) EncodeMp4(inputPath string, outputPath string) error {
 	args := []string{
-		"-i",
-		inputPath,
-		"-vcodec", "h264",
-		"-acodec", "aac",
-		"-vf", "scale='min(1080,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
+		"-hwaccel", "vaapi",
+		"-init_hw_device", "vaapi=va:/dev/dri/renderD128,driver=i965",
+		"-i", inputPath,
+		"-codec:v:0", "h264_vaapi",
+		"-vf", "scale='min(1080,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,hwupload_vaapi",
 		"-movflags", "+faststart+use_metadata_tags",
 		outputPath,
 	}
